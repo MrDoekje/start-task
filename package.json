@@ -1,0 +1,24 @@
+{
+  "name": "start-task",
+  "type": "module",
+  "scripts": {
+    "start": "node tui.js",
+    "launch": "node launch.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint -c .oxlintrc.json --ignore-pattern=node_modules --ignore-pattern=user .",
+    "format": "prettier --write . --ignore-unknown",
+    "format:check": "prettier --check . --ignore-unknown"
+  },
+  "dependencies": {
+    "@clack/prompts": "^1.0.1",
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.1"
+  },
+  "devDependencies": {
+    "@oxlint/binding-darwin-arm64": "^1.50.0",
+    "oxlint": "^1.50.0",
+    "prettier": "^3.8.1",
+    "vitest": "^4.0.18"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["jsdoc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn",
+    "pedantic": "off",
+    "style": "off",
+    "perf": "warn"
+  },
+  "rules": {
+    "no-await-in-loop": "off",
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "jsdoc/require-param": "warn",
+    "jsdoc/require-param-type": "warn",
+    "jsdoc/require-returns": "warn",
+    "jsdoc/check-tag-names": "warn",
+    "jsdoc/require-param-name": "warn"
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*.js"],
+      "rules": {
+        "jsdoc/require-param": "off",
+        "jsdoc/require-returns": "off"
+      }
+    }
+  ]
+}
