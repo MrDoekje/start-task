@@ -2,6 +2,8 @@
 
 Worktrees let each task work on an isolated copy of the repo without switching branches.
 
+Like all config options, `worktree` and `projects` participate in the option cascade — they can be overridden per-flow via `flow.options` or per-run via `optionSteps`. See `docs/configure-start-task.md` for the full cascade.
+
 ## Worktree config
 
 ```js

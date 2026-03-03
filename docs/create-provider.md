@@ -2,6 +2,8 @@
 
 Providers are pluggable services used by start-task. Each has a simple interface — use a built-in factory or implement your own.
 
+All providers set on the config (agent, git, taskProvider, etc.) participate in the **option cascade**: they can be overridden per-flow via `flow.options` and per-run via `optionSteps`. See `docs/configure-start-task.md` for the full cascade explanation.
+
 ## Agent provider
 
 Required in config as `agent`. Interface: `{ name: string, buildCommand: (promptFile: string) => string }`.
@@ -120,6 +122,35 @@ sessionManager: createTmuxSessionManager({
 ```
 
 Must implement: `launchTask`, `listWindows`, `closeWindow`, `switchToWindow`, `openWindow`, `isSessionRunning`, `ensureTuiWindow`, `openTerminalAttached`.
+
+## Overriding providers per-flow or per-run
+
+Any provider on the config can be overridden at the flow level or by the user at runtime:
+
+```js
+// Static: always use Gemini for this flow
+flows: {
+  investigate: {
+    label: "Investigate",
+    steps: [...],
+    action: investigateAction,
+    options: { agent: createGeminiAgent() },
+  },
+},
+
+// Dynamic: let the user pick at runtime
+optionSteps: {
+  agent: {
+    type: "select",
+    label: "Agent",
+    message: "Which agent?",
+    options: [
+      { value: createClaudeCodeAgent(), label: "Claude Code" },
+      { value: createGeminiAgent(), label: "Gemini" },
+    ],
+  },
+},
+```
 
 ## Adding a new provider to lib/
 

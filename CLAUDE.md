@@ -2,6 +2,16 @@
 
 Config file: `user/start-task.config.js` (gitignored). Must export a default object.
 
+## Option cascade
+
+Everything on the config that isn't a framework key (`sessionManager`, `flows`, `steps`, `optionSteps`) is an **option**. Options cascade through layers — each layer wins over the previous:
+
+```
+config → flow.options → wizard steps → option overrides (optionSteps)
+```
+
+This means any option (agent, git, projects, worktree, or any custom key) can be set globally, overridden per-flow, and optionally overridden by the user at runtime — with zero framework changes needed for new options.
+
 ## Required keys
 
 - `agent` — `{ name: string, buildCommand: (promptFile) => string }`
@@ -10,7 +20,18 @@ Config file: `user/start-task.config.js` (gitignored). Must export a default obj
 
 ## Optional keys
 
-The framework only validates the three required keys. Everything else (`git`, `taskProvider`, `projects`, `workspaceRoot`, `worktree`, `steps`, etc.) is passed through for your flow actions to use. See `examples/minimal.config.js`.
+- `steps` — `Record<string, WizardStep>` reusable wizard step definitions
+- `optionSteps` — `Record<string, OptionStep>` wizard steps for user-overridable options (shown after flow steps, keyed by option name)
+
+Everything else (`git`, `taskProvider`, `projects`, `workspaceRoot`, `worktree`, etc.) is an option — passed through for flow actions to use and participates in the cascade. See `examples/minimal.config.js`.
+
+## Flow properties
+
+- `label` (string) — menu display name
+- `steps` (array) — wizard step definitions or string references to `config.steps`
+- `action` (function) — `(results, config, utils) => Promise<void>`
+- `options` (object, optional) — static per-flow overrides, e.g. `{ agent: createGeminiAgent() }`
+- `overrides` (boolean or object, optional) — controls which `optionSteps` are shown after wizard: `true` (default, all), `false` (none), or `{ agent: false }` (per-key)
 
 ## Validation
 
@@ -19,6 +40,9 @@ The framework only validates the three required keys. Everything else (`git`, `t
 3. Each flow must have `label` (string), `steps` (array), `action` (function)
 4. String step references in flows must exist in `config.steps`
 5. Each entry in `config.steps` must have `type`, `key`, and `message`
+6. `flow.options` must be a plain object if present; `flow.options.agent` must have valid `name` and `buildCommand`
+7. `flow.overrides` must be a boolean or plain object if present
+8. Each entry in `config.optionSteps` must have `type` and `message`
 
 ## Skills
 

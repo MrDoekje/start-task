@@ -1,6 +1,16 @@
 # Create a flow action
 
-Flow actions are async functions that run after the wizard completes. They receive the wizard answers and launch agent sessions.
+Flow actions are async functions that run after the wizard completes. They receive resolved data and launch agent sessions.
+
+## What actions receive
+
+Actions get three arguments:
+
+- **`results`** — clean user inputs only. Wizard answers whose keys match a config option (agent, git, projects, etc.) are automatically promoted into `config` and removed from `results`. Your action only sees non-option wizard answers like `ticketKey`, `instruction`, `projectKeys`.
+- **`config`** — the full config with all option overrides resolved. The cascade has already been applied (config → `flow.options` → wizard → `optionSteps`), so `config.agent`, `config.git`, etc. reflect whatever the user or flow configured.
+- **`utils`** — session + workflow utilities, rebuilt from the resolved config.
+
+This means actions don't need to know about the cascade — just use `config.agent` and it's always the right one.
 
 ## Basic structure
 
@@ -8,8 +18,8 @@ Flow actions are async functions that run after the wizard completes. They recei
 // user/my-action.js
 
 /**
- * @param {Record<string, any>} results - wizard answers keyed by step.key
- * @param {import("../lib/types.js").Config} config - full config object
+ * @param {Record<string, any>} results - user inputs (option keys already promoted to config)
+ * @param {import("../lib/types.js").Config} config - fully resolved config
  * @param {import("../lib/types.js").ActionUtils} utils - session + workflow utilities
  */
 export async function myAction(results, config, utils) {
@@ -23,7 +33,13 @@ Wire it into the config:
 ```js
 import { myAction } from "./my-action.js";
 flows: {
-  myFlow: { label: "My Flow", steps: [...], action: myAction },
+  myFlow: {
+    label: "My Flow",
+    steps: [...],
+    action: myAction,
+    options: { ... },      // optional: static overrides for this flow
+    overrides: true,       // optional: allow runtime overrides (default)
+  },
 }
 ```
 

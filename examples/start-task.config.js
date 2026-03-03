@@ -7,6 +7,7 @@
 import { createGitLabProvider } from "../lib/providers/git/gitlab.js";
 import { createJiraProvider } from "../lib/providers/tickets/jira.js";
 import { createClaudeCodeAgent } from "../lib/providers/agents/claude-code.js";
+import { createGeminiAgent } from "../lib/providers/agents/gemini.js";
 import { createTmuxSessionManager } from "../lib/session/tmux.js";
 import { createGhosttyTerminal } from "../lib/providers/terminals/ghostty.js";
 import { nodeSetup } from "../lib/presets/setup/node.js";
@@ -65,17 +66,33 @@ export default {
     userContext: userContextStep,
   },
 
+  // ── Option steps (runtime overrides shown after flow wizard) ──
+  optionSteps: {
+    agent: {
+      type: "select",
+      label: "Agent",
+      message: "Which agent?",
+      options: [
+        { value: createClaudeCodeAgent(), label: "Claude Code" },
+        { value: createGeminiAgent(), label: "Gemini CLI" },
+      ],
+    },
+  },
+
   // ── Flows ──
   flows: {
     start: {
       label: "Start Task",
       steps: ["ticketKey", "projectKeys", "userContext"],
       action: startAction,
+      // overrides: true — default, optionSteps shown after wizard
     },
     investigate: {
       label: "Investigate",
       steps: ["ticketKey", "projectKeys"],
       action: investigateAction,
+      options: { agent: createGeminiAgent() }, // static: always use Gemini
+      overrides: false,                        // no runtime overrides
     },
     setup: setupFlow,
   },
