@@ -281,7 +281,7 @@ BITBUCKET_TOKEN=...  BITBUCKET_USERNAME=...
 ## Validation rules
 
 1. `agent` must have `name` (string) and `buildCommand` (function)
-2. `sessionManager` must implement all SessionManager methods: `launchTask`, `listWindows`, `closeWindow`, `switchToWindow`, `openWindow`, `isSessionRunning`, `ensureTuiWindow`, `openTerminalAttached`
+2. `sessionManager` must implement all SessionManager methods: `launchTask`, `listWindows`, `closeWindow`, `switchToWindow`, `openWindow`, `isSessionRunning`, `hasAttachedClient`, `ensureTuiWindow`, `openTerminalAttached`
 3. Each flow must have `label` (string), `steps` (array), `action` (function)
 4. String step references must exist in `config.steps`
 5. Each step must have `type`, `key`, and `message`
