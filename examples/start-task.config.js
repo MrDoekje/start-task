@@ -4,13 +4,13 @@
  * Copy this file to `user/start-task.config.js` and customize it.
  * See CLAUDE.md for the full config reference.
  */
-import { createGitLabProvider } from "../lib/providers/gitlab.js";
-import { createJiraProvider } from "../lib/providers/jira.js";
+import { createGitLabProvider } from "../lib/providers/git/gitlab.js";
+import { createJiraProvider } from "../lib/providers/tickets/jira.js";
 import { createClaudeCodeAgent } from "../lib/providers/agents/claude-code.js";
 import { createTmuxSessionManager } from "../lib/session/tmux.js";
 import { createGhosttyTerminal } from "../lib/providers/terminals/ghostty.js";
 import { nodeSetup } from "../lib/presets/setup/node.js";
-import { ticketKeyStep } from "../lib/presets/steps/jira.js";
+import { ticketKeyStep } from "../lib/presets/steps/ticket.js";
 import { projectKeysStep, userContextStep } from "../lib/presets/steps/common.js";
 import { setupFlow } from "../lib/presets/flows/setup.js";
 import { startAction } from "./start.js";

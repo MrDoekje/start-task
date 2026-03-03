@@ -122,7 +122,7 @@ flows: {
 Define in `config.steps`, reference by string name in flows:
 
 ```js
-import { ticketKeyStep } from "../lib/presets/steps/jira.js";
+import { ticketKeyStep } from "../lib/presets/steps/ticket.js";
 import { projectKeysStep, userContextStep } from "../lib/presets/steps/common.js";
 
 steps: {
@@ -166,7 +166,11 @@ flows: {
 
 ```
 GITLAB_API_URL=...   GITLAB_PRIVATE_TOKEN=...
+GITHUB_TOKEN=...
 JIRA_API_URL=...     JIRA_USER_EMAIL=...     JIRA_API_TOKEN=...
+LINEAR_API_KEY=...
+AZURE_DEVOPS_ORG_URL=...  AZURE_DEVOPS_PAT=...
+BITBUCKET_TOKEN=...  BITBUCKET_USERNAME=...
 ```
 
 ## Validation rules

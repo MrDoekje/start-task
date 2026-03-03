@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toKebabCase, createGitLabProvider } from "../lib/providers/gitlab.js";
+import { toKebabCase } from "../lib/providers/git/utils.js";
+import { createGitLabProvider } from "../lib/providers/git/gitlab.js";
 
 describe("toKebabCase", () => {
   it("converts to lowercase kebab-case", () => {

@@ -45,7 +45,11 @@ git: {
 Built-in:
 
 ```js
-import { createGitLabProvider } from "../lib/providers/gitlab.js";
+import { createGitLabProvider } from "../lib/providers/git/gitlab.js";
+import { createGitHubProvider } from "../lib/providers/git/github.js";
+import { createBitbucketProvider } from "../lib/providers/git/bitbucket.js";
+import { createAzureDevOpsProvider } from "../lib/providers/git/azure-devops.js";
+
 git: createGitLabProvider({ apiUrl: process.env.GITLAB_API_URL, token: process.env.GITLAB_PRIVATE_TOKEN }),
 ```
 
@@ -66,7 +70,12 @@ taskProvider: {
 Built-in:
 
 ```js
-import { createJiraProvider } from "../lib/providers/jira.js";
+import { createJiraProvider } from "../lib/providers/tickets/jira.js";
+import { createGitHubIssuesProvider } from "../lib/providers/tickets/github-issues.js";
+import { createGitLabIssuesProvider } from "../lib/providers/tickets/gitlab-issues.js";
+import { createLinearProvider } from "../lib/providers/tickets/linear.js";
+import { createAzureDevOpsTicketProvider } from "../lib/providers/tickets/azure-devops.js";
+
 taskProvider: createJiraProvider({
   apiUrl: process.env.JIRA_API_URL,
   email: process.env.JIRA_USER_EMAIL,
@@ -114,4 +123,4 @@ Must implement: `launchTask`, `listWindows`, `closeWindow`, `switchToWindow`, `o
 
 ## Adding a new provider to lib/
 
-Create a file in `lib/providers/` exporting a factory function. Follow the pattern of existing providers — take config options, validate required fields, return the interface object.
+Create a file in the appropriate `lib/providers/` subdirectory (`git/`, `tickets/`, `agents/`, or `terminals/`) exporting a factory function. Follow the pattern of existing providers — take config options, validate required fields, return the interface object.

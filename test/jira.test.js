@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractTextFromADF, extractFieldText, createJiraProvider } from "../lib/providers/jira.js";
+import { extractTextFromADF, extractFieldText, createJiraProvider } from "../lib/providers/tickets/jira.js";
 
 describe("extractTextFromADF", () => {
   it("returns empty string for null/undefined", () => {
