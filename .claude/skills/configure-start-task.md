@@ -25,6 +25,38 @@ export default {
 };
 ```
 
+## Minimal config (no git/ticket)
+
+If you don't need git operations, ticket providers, worktrees, or projects, the config only needs the three required keys:
+
+```js
+import { createClaudeCodeAgent } from "../lib/providers/agents/claude-code.js";
+import { createTmuxSessionManager } from "../lib/session/tmux.js";
+import { createGhosttyTerminal } from "../lib/providers/terminals/ghostty.js";
+import { quickTaskAction } from "./quick-task.js";
+
+export default {
+  agent: createClaudeCodeAgent(),
+  sessionManager: createTmuxSessionManager({
+    bin: "/opt/homebrew/bin/tmux",
+    session: "tasks",
+    terminal: createGhosttyTerminal(),
+  }),
+  flows: {
+    quick: {
+      label: "Quick Task",
+      steps: [
+        { type: "text", key: "projectPath", message: "Project path:" },
+        { type: "text", key: "instruction", message: "What to do?" },
+      ],
+      action: quickTaskAction,
+    },
+  },
+};
+```
+
+See `examples/minimal.config.js` for a complete working example.
+
 ## Adding a flow
 
 1. Create action in `user/my-action.js` (see `/create-flow-action` skill)

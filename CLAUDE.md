@@ -10,7 +10,7 @@ Config file: `user/start-task.config.js` (gitignored). Must export a default obj
 
 ## Optional keys
 
-The framework only validates the three required keys. Everything else (`git`, `taskProvider`, `projects`, `workspaceRoot`, `worktree`, `steps`, etc.) is passed through for your flow actions to use.
+The framework only validates the three required keys. Everything else (`git`, `taskProvider`, `projects`, `workspaceRoot`, `worktree`, `steps`, etc.) is passed through for your flow actions to use. See `examples/minimal.config.js`.
 
 ## Validation
 
