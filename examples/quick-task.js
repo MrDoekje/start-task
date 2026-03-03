@@ -21,7 +21,7 @@ export async function quickTaskAction(results, config, utils) {
         body: [
           "- Use `npm test` (or the project's test command) to verify changes",
           "- Use `npm run lint` to check for style issues",
-          "- Read `CLAUDE.md` in the project root for project-specific instructions",
+          "- Read the project documentation (CLAUDE.md, README.md, or equivalent) for project-specific instructions",
         ].join("\n"),
       },
       {

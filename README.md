@@ -27,9 +27,9 @@ You're encouraged to customize everything. This tool is meant to be shaped aroun
 
 ### Agents
 
+- Aider
 - Claude Code
 - Codex
-- Aider
 - Gemini CLI
 - OpenCode
 - Or implement your own
@@ -43,12 +43,19 @@ You're encouraged to customize everything. This tool is meant to be shaped aroun
 
 ### Git providers
 
+- Azure DevOps
+- Bitbucket
+- GitHub
 - GitLab
 - Or implement your own
 
 ### Task providers
 
+- Azure DevOps Work Items
+- GitHub Issues
+- GitLab Issues
 - Jira (with custom field support)
+- Linear
 - Or implement your own
 
 ### Workflows
@@ -56,7 +63,7 @@ You're encouraged to customize everything. This tool is meant to be shaped aroun
 - Define as many menu items as you need
 - Each collects inputs through wizard steps (text, single-select, multi-select)
 - Then runs whatever logic you want — fetch tickets, create branches, set up worktrees, build prompts, launch agents
-- Ship with reusable presets for common patterns (Jira steps, project selection, prompt builders, Node.js worktree setup)
+- Ship with reusable presets for common patterns (ticket steps, project selection, prompt builders, Node.js/Python/Docker worktree setup)
 
 ## Configuring
 
@@ -66,12 +73,18 @@ For reference, `examples/` contains a complete working config with Jira integrat
 
 ## Environment variables
 
-If you use providers that need API keys (Jira, GitLab, etc.), create a `.env` file in the project root:
+If you use providers that need API keys, create a `.env` file in the project root:
 
 ```
 GITLAB_API_URL=https://gitlab.com/api/v4
 GITLAB_PRIVATE_TOKEN=glpat-...
+GITHUB_TOKEN=ghp_...
 JIRA_API_URL=https://yourorg.atlassian.net
 JIRA_USER_EMAIL=you@example.com
 JIRA_API_TOKEN=...
+LINEAR_API_KEY=lin_api_...
+AZURE_DEVOPS_ORG_URL=https://dev.azure.com/myorg
+AZURE_DEVOPS_PAT=...
+BITBUCKET_TOKEN=...
+BITBUCKET_USERNAME=...
 ```

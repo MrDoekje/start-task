@@ -22,13 +22,13 @@ The framework only validates the three required keys. Everything else (`git`, `t
 
 ## Skills
 
-Use these skills for detailed guidance on each part:
+Detailed guides live in the `docs/` directory. Claude Code can also invoke these as skills:
 
-- `/configure-start-task` — overall config structure, adding flows, wiring everything together
-- `/create-provider` — create or swap agent, git, task, terminal, and session providers
-- `/create-wizard-step` — create custom wizard steps (text, select, multiselect)
-- `/create-flow-action` — write action functions, use utils, build prompts
-- `/worktree-setup` — configure worktrees and project setup steps
+- `/configure-start-task` — overall config structure, adding flows (`docs/configure-start-task.md`)
+- `/create-provider` — create or swap providers (`docs/create-provider.md`)
+- `/create-wizard-step` — custom wizard steps (`docs/create-wizard-step.md`)
+- `/create-flow-action` — write action functions, build prompts (`docs/create-flow-action.md`)
+- `/worktree-setup` — worktrees and project setup (`docs/worktree-setup.md`)
 
 ## Environment
 

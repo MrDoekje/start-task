@@ -2,7 +2,7 @@
  * Example start-task configuration.
  *
  * Copy this file to `user/start-task.config.js` and customize it.
- * See CLAUDE.md for the full config reference.
+ * See the project documentation for the full config reference.
  */
 import { createGitLabProvider } from "../lib/providers/git/gitlab.js";
 import { createJiraProvider } from "../lib/providers/tickets/jira.js";

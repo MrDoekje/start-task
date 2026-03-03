@@ -5,15 +5,19 @@
  * No git provider, task provider, worktrees, or projects needed.
  *
  * Copy this file to `user/start-task.config.js` and customize it.
+ *
+ * Swap the agent import for your preferred coding agent:
+ *   createAiderAgent, createClaudeCodeAgent, createCodexAgent,
+ *   createGeminiAgent, createOpenCodeAgent
  */
-import { createClaudeCodeAgent } from "../lib/providers/agents/claude-code.js";
+import { createCodexAgent } from "../lib/providers/agents/codex.js";
 import { createTmuxSessionManager } from "../lib/session/tmux.js";
 import { createGhosttyTerminal } from "../lib/providers/terminals/ghostty.js";
 import { quickTaskAction } from "./quick-task.js";
 
 /** @type {import("../lib/types.js").Config} */
 export default {
-  agent: createClaudeCodeAgent(),
+  agent: createCodexAgent(),
 
   sessionManager: createTmuxSessionManager({
     bin: "/opt/homebrew/bin/tmux",
