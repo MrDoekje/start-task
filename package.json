@@ -1,9 +1,12 @@
 {
   "name": "start-task",
   "type": "module",
+  "bin": {
+    "start-task": "./cli.js"
+  },
   "scripts": {
-    "start": "node tui.js",
-    "launch": "node launch.js",
+    "start": "node cli.js",
+    "tui": "node cli.js --tui",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "oxlint -c .oxlintrc.json --ignore-pattern=node_modules --ignore-pattern=user .",

@@ -1,5 +1,4 @@
-- [ ] consolidate launch/tui script so there's just one entrypoint
-  - [ ] create script for adding execution of the launch script to path (covering different os's) for easy cli invocation
+- [ ] consolidate launch/tui script so there's just one entrypoint - [ ] create script for adding execution of the launch script to path (covering different os's) for easy cli invocation
 
 - [ ] in setup 'skill' ask questions about the expected work-way of the user so that the setup can be made to meet them;
     - [ ] should worktrees/branches be created (per task?)

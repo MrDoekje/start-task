@@ -6,7 +6,7 @@ A terminal tool for managing AI coding agent sessions. Run it, pick a workflow f
 
 ```bash
 npm install
-node launch.js
+node cli.js
 ```
 
 That's it. On first run a setup wizard walks you through picking your agent and terminal. A working config is generated and you're dropped into the TUI menu.

@@ -1,12 +1,18 @@
 #!/usr/bin/env node
 
 import { resolve } from "path";
-import { loadConfig } from "./lib/loadConfig.js";
 
 const __dirname = resolve(new URL(".", import.meta.url).pathname);
-const tuiScript = resolve(__dirname, "tui.js");
+const isTui = process.argv.includes("--tui");
 
-async function main() {
+if (isTui) {
+  // ── TUI mode: interactive menu (runs inside tmux window) ──
+  const { default: runTui } = await import("./lib/tui.js");
+  await runTui();
+} else {
+  // ── Launch mode: setup + tmux session + open terminal ──
+  const { loadConfig } = await import("./lib/loadConfig.js");
+
   let config;
   let firstRun = false;
 
@@ -20,8 +26,8 @@ async function main() {
   }
 
   const { isSessionRunning, ensureTuiWindow, openTerminalAttached } = config.sessionManager;
-
-  const tuiCommand = `${firstRun ? "START_TASK_FIRST_RUN=1 " : ""}node ${tuiScript}`;
+  const cliScript = resolve(__dirname, "cli.js");
+  const tuiCommand = `${firstRun ? "START_TASK_FIRST_RUN=1 " : ""}node ${cliScript} --tui`;
 
   if (isSessionRunning()) {
     ensureTuiWindow(tuiCommand);
@@ -33,8 +39,3 @@ async function main() {
 
   openTerminalAttached();
 }
-
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
