@@ -7,7 +7,7 @@ Wizard steps are the prompts shown to users when they pick a flow. Each step col
 ```js
 /** @type {import("../lib/types.js").WizardStep} */
 const myStep = {
-  type: "text", // "text" | "select" | "multiselect"
+  type: "text", // "text" | "editor" | "select" | "multiselect"
   key: "myKey", // result key — action receives results.myKey
   message: "Your prompt?",
 };
@@ -39,6 +39,24 @@ const myStep = {
 **Flow:** `validate` -> user sees error or input accepted -> `transform` -> `postValidate` -> stored in `results[key]`.
 
 Both `transform` and `postValidate` receive `(value, utils, config)` where `utils` is the ActionUtils object and `config` is the full config.
+
+## Editor step
+
+Opens `$VISUAL` / `$EDITOR` (falls back to `vi`) with a temp file for multi-line input. Comment lines (`#`) are stripped from the result. Use this instead of `text` when users need to paste or write multi-line content.
+
+```js
+{
+  type: "editor",
+  key: "userContext",
+  message: "Additional context (optional)",
+  fileName: "context.md",           // temp file name (default: "input.md")
+  editorHeader: "# Custom header\n\n", // optional; lines starting with # are stripped
+  optional: true,
+  transform(value, utils, config) { // works the same as text steps
+    return value.toUpperCase();
+  },
+}
+```
 
 ## Select step
 
@@ -111,7 +129,7 @@ import { projectKeysStep, userContextStep } from "../lib/presets/steps/common.js
 
 - `ticketKeyStep` — text input, parses ticket keys/URLs via `config.taskProvider`
 - `projectKeysStep` — multiselect of `config.projects` keys
-- `userContextStep` — optional text for additional context
+- `userContextStep` — opens editor for additional context (multi-line friendly)
 
 ## Option steps (optionSteps)
 
