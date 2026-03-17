@@ -27,7 +27,8 @@ if (isTui) {
 
   const { isSessionRunning, hasAttachedClient, ensureTuiWindow, openTerminalAttached } = config.sessionManager;
   const cliScript = resolve(__dirname, "cli.js");
-  const tuiCommand = `${firstRun ? "START_TASK_FIRST_RUN=1 " : ""}node ${cliScript} --tui`;
+  const nodeCmd = `${firstRun ? "START_TASK_FIRST_RUN=1 " : ""}node ${cliScript} --tui`;
+  const tuiCommand = `while true; do ${nodeCmd}; [ $? -ne 99 ] && break; done`;
 
   if (isSessionRunning()) {
     ensureTuiWindow(tuiCommand);
