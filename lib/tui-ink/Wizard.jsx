@@ -6,6 +6,7 @@ import SelectStep from "./steps/SelectStep.jsx";
 import MultiselectStep from "./steps/MultiselectStep.jsx";
 import MultilineStep from "./steps/MultilineStep.jsx";
 import { ACCENT, ERROR } from "./theme.js";
+import { nextActiveIndex, cleanMessage, stepShortcuts } from "./wizardModel.js";
 
 const STEP_COMPONENTS = {
   text: TextStep,
@@ -14,44 +15,6 @@ const STEP_COMPONENTS = {
   multiselect: MultiselectStep,
   multiline: MultilineStep,
 };
-
-function stepShortcuts(step) {
-  switch (step.type) {
-    case "text": {
-      const shortcuts = [["↵", "continue"], ["^W", "del word"], ["^E", "editor"]];
-      if (step.clean) shortcuts.push(["tab", "clean"]);
-      shortcuts.push(["esc", "back"]);
-      return shortcuts;
-    }
-    case "editor": return [["esc", "back"]];
-    case "select": return [["↵", "select"], ["/", "filter"], ["esc", "back"]];
-    case "multiselect":
-      return [["space", "toggle"], ["↵", "continue"], ["/", "filter"], ["esc", "back"]];
-    case "multiline":
-      return [["↵", "newline"], ["^D", "submit"], ["^W", "del word"], ["esc", "back"]];
-    default: return [["esc", "back"]];
-  }
-}
-
-function cleanMessage(msg) {
-  if (!msg) return "";
-  return msg.replace(/:\s*$/, "");
-}
-
-/**
- * Find the next non-skipped step in a given direction. Skips steps whose
- * `when(results, config)` returns false. Returns steps.length (forward
- * sentinel) or -1 (backward sentinel) when no step is reachable.
- */
-function nextActiveIndex(steps, from, dir, results, config) {
-  let i = from;
-  while (i >= 0 && i < steps.length) {
-    const step = steps[i];
-    if (!step.when || step.when(results, config)) return i;
-    i += dir;
-  }
-  return dir > 0 ? steps.length : -1;
-}
 
 function Dots({ total, index }) {
   return (

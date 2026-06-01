@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Box, Text, useInput } from "ink";
 import { isCancel } from "./keys.js";
 import { ACCENT } from "./theme.js";
+import { initialEnabledIndex, prevEnabledIndex, nextEnabledIndex, filterByLabel } from "./listNav.js";
 
 /**
  * Keyboard-navigable list. Disabled items are skipped during navigation
@@ -36,17 +37,12 @@ export default function Select({
   const [filterMode, setFilterMode] = useState(false);
   const [filter, setFilter] = useState("");
 
-  const visibleItems = useMemo(() => {
-    if (!filter) return items;
-    const needle = filter.toLowerCase();
-    const matchText = (it) => (filterFields ? filterFields(it) : it.label ?? "");
-    return items.filter((it) => !it.disabled && matchText(it).toLowerCase().includes(needle));
-  }, [items, filter, filterFields]);
+  const visibleItems = useMemo(
+    () => filterByLabel(items, filter, filterFields),
+    [items, filter, filterFields],
+  );
 
-  const [index, setIndex] = useState(() => {
-    const firstEnabled = visibleItems.findIndex((it) => !it.disabled);
-    return visibleItems[initialIndex] && !visibleItems[initialIndex].disabled ? initialIndex : firstEnabled;
-  });
+  const [index, setIndex] = useState(() => initialEnabledIndex(visibleItems, initialIndex));
 
   // Snap cursor back to an enabled row when items change (e.g. filter applied)
   useEffect(() => {
@@ -79,15 +75,11 @@ export default function Select({
       }
       if (key.backspace || key.delete) { setFilter(filter.slice(0, -1)); return; }
       if (key.upArrow) {
-        for (let i = index - 1; i >= 0; i--) {
-          if (!visibleItems[i].disabled) return setIndex(i);
-        }
+        setIndex(prevEnabledIndex(visibleItems, index, { wrap: false }));
         return;
       }
       if (key.downArrow) {
-        for (let i = index + 1; i < visibleItems.length; i++) {
-          if (!visibleItems[i].disabled) return setIndex(i);
-        }
+        setIndex(nextEnabledIndex(visibleItems, index, { wrap: false }));
         return;
       }
       if (input && !key.ctrl && !key.meta) setFilter(filter + input);
@@ -106,20 +98,10 @@ export default function Select({
       return;
     }
     if (key.upArrow || (key.ctrl && input === "p")) {
-      for (let i = index - 1; i >= 0; i--) {
-        if (!visibleItems[i].disabled) return setIndex(i);
-      }
-      for (let i = visibleItems.length - 1; i > index; i--) {
-        if (!visibleItems[i].disabled) return setIndex(i);
-      }
+      setIndex(prevEnabledIndex(visibleItems, index));
     }
     if (key.downArrow || (key.ctrl && input === "n")) {
-      for (let i = index + 1; i < visibleItems.length; i++) {
-        if (!visibleItems[i].disabled) return setIndex(i);
-      }
-      for (let i = 0; i < index; i++) {
-        if (!visibleItems[i].disabled) return setIndex(i);
-      }
+      setIndex(nextEnabledIndex(visibleItems, index));
     }
   });
 

@@ -3,41 +3,13 @@ import { extractOptions, resolveOptions } from "../resolveOptions.js";
 import { buildActionUtils } from "../actionUtils.js";
 import Wizard from "./Wizard.jsx";
 import { resolveStepOptions } from "./stepHelpers.js";
-
-/**
- * Resolve string step references against config.steps; pass inline step objects through.
- */
-function resolveSteps(flowSteps, config) {
-  return flowSteps.map((step) => {
-    if (typeof step === "string") {
-      const ref = config.steps?.[step];
-      if (!ref) throw new Error(`Unknown step reference: "${step}"`);
-      return ref;
-    }
-    return step;
-  });
-}
-
-/**
- * Returns true if at least one step is reachable with empty results, i.e. the
- * wizard would render something rather than immediately completing.
- */
-function hasActiveStep(steps, config) {
-  return steps.some((s) => !s.when || s.when({}, config));
-}
+import { resolveSteps, hasActiveStep, overrideEntries } from "./flowModel.js";
 
 /**
  * Post-wizard "override defaults?" multiselect, then a prompt per selected option.
  */
 async function collectOptionOverrides(optionSteps, flowOverrides, config, utils, renderScreen) {
-  if (!optionSteps || flowOverrides === false) return {};
-
-  const entries = Object.entries(optionSteps).filter(([key]) => {
-    if (typeof flowOverrides === "object" && flowOverrides !== null) {
-      return flowOverrides[key] !== false;
-    }
-    return true;
-  });
+  const entries = overrideEntries(optionSteps, flowOverrides);
   if (entries.length === 0) return {};
 
   const multiSelectStep = {

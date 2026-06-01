@@ -1,24 +1,6 @@
 import React, { memo } from "react";
 import { Box, Text } from "ink";
-
-/**
- * Resolves a step ref (string key or inline object) to its inline definition.
- */
-function resolveStep(step, config) {
-  if (typeof step === "string") return config.steps?.[step];
-  return step;
-}
-
-function summarizeOptions(config, flow) {
-  const merged = { ...config, ...(flow.options ?? {}) };
-  const rows = [];
-  rows.push(["group", flow.group ?? "Other"]);
-  if (merged.agent?.name) rows.push(["agent", merged.agent.name]);
-  if (merged.git) rows.push(["git", merged.git.name ?? "configured"]);
-  if (merged.taskProvider) rows.push(["tracker", merged.taskProvider.name ?? "configured"]);
-  if (merged.worktree?.enabled) rows.push(["worktree", "enabled"]);
-  return rows;
-}
+import { resolveStep, summarizeOptions, stepLabel } from "./previewModel.js";
 
 function Preview({ flowKey, config }) {
   if (!flowKey || !config.flows[flowKey]) {
@@ -75,11 +57,3 @@ function Preview({ flowKey, config }) {
 }
 
 export default memo(Preview);
-
-function stepLabel(step) {
-  if (!step) return "";
-  // Strip trailing colon and "(optional)" tails from the prompt message for readability
-  return (step.message ?? step.key ?? "")
-    .replace(/\s*\(optional[^)]*\)\s*$/i, "")
-    .replace(/:\s*$/, "");
-}

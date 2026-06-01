@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Text, useInput } from "ink";
-import { nextWordBoundary, prevWordBoundary } from "./textBuffer.js";
+import {
+  charLeft, charRight, wordLeft, wordRight, lineStart, lineEnd,
+  deleteWordBack, deleteWordForward, killToStart, killToEnd, backspace, insert,
+} from "./singleLineBuffer.js";
 
 /**
  * Controlled single-line text input with readline-style keybindings.
@@ -42,56 +45,56 @@ export default function SingleLineInput({
     if (key.return) return onSubmit(value);
 
     if (key.leftArrow) {
-      if (key.meta || key.ctrl) return setCol(prevWordBoundary(value, clampedCol));
-      return setCol(Math.max(0, clampedCol - 1));
+      if (key.meta || key.ctrl) return setCol(wordLeft(value, clampedCol).col);
+      return setCol(charLeft(value, clampedCol).col);
     }
     if (key.rightArrow) {
-      if (key.meta || key.ctrl) return setCol(nextWordBoundary(value, clampedCol));
-      return setCol(Math.min(value.length, clampedCol + 1));
+      if (key.meta || key.ctrl) return setCol(wordRight(value, clampedCol).col);
+      return setCol(charRight(value, clampedCol).col);
     }
 
-    if (key.meta && (input === "b")) return setCol(prevWordBoundary(value, clampedCol));
-    if (key.meta && (input === "f")) return setCol(nextWordBoundary(value, clampedCol));
+    if (key.meta && (input === "b")) return setCol(wordLeft(value, clampedCol).col);
+    if (key.meta && (input === "f")) return setCol(wordRight(value, clampedCol).col);
 
     if (key.ctrl && input === "w") {
-      const start = prevWordBoundary(value, clampedCol);
-      return replace(value.slice(0, start) + value.slice(clampedCol), start);
+      const r = deleteWordBack(value, clampedCol);
+      return replace(r.value, r.col);
     }
     if (key.meta && input === "d") {
-      const end = nextWordBoundary(value, clampedCol);
-      return replace(value.slice(0, clampedCol) + value.slice(end), clampedCol);
+      const r = deleteWordForward(value, clampedCol);
+      return replace(r.value, r.col);
     }
     if (key.ctrl && input === "u") {
-      return replace(value.slice(clampedCol), 0);
+      const r = killToStart(value, clampedCol);
+      return replace(r.value, r.col);
     }
     if (key.ctrl && input === "k") {
-      return replace(value.slice(0, clampedCol), clampedCol);
+      const r = killToEnd(value, clampedCol);
+      return replace(r.value, r.col);
     }
-    if (key.ctrl && input === "a") return setCol(0);
-    if (key.ctrl && input === "e") return setCol(value.length);
+    if (key.ctrl && input === "a") return setCol(lineStart(value).col);
+    if (key.ctrl && input === "e") return setCol(lineEnd(value).col);
 
     // Option+Backspace on macOS arrives as meta+backspace — delete word back
     if (key.meta && key.backspace) {
-      const start = prevWordBoundary(value, clampedCol);
-      return replace(value.slice(0, start) + value.slice(clampedCol), start);
+      const r = deleteWordBack(value, clampedCol);
+      return replace(r.value, r.col);
     }
     if (key.meta && key.delete) {
-      const end = nextWordBoundary(value, clampedCol);
-      return replace(value.slice(0, clampedCol) + value.slice(end), clampedCol);
+      const r = deleteWordForward(value, clampedCol);
+      return replace(r.value, r.col);
     }
 
     if (key.backspace || key.delete) {
       if (clampedCol === 0) return;
-      return replace(value.slice(0, clampedCol - 1) + value.slice(clampedCol), clampedCol - 1);
+      const r = backspace(value, clampedCol);
+      return replace(r.value, r.col);
     }
 
     if (input && !key.ctrl && !key.meta) {
-      const sanitized = input.replace(/[\r\n]/g, "");
-      if (!sanitized) return;
-      return replace(
-        value.slice(0, clampedCol) + sanitized + value.slice(clampedCol),
-        clampedCol + sanitized.length,
-      );
+      const r = insert(value, clampedCol, input);
+      if (r.col === clampedCol) return;
+      return replace(r.value, r.col);
     }
   });
 

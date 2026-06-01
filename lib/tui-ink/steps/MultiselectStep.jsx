@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { resolveStepOptions } from "../stepHelpers.js";
+import { filterByLabelOrValue, clampCursor, toggleValue } from "../listNav.js";
 import { isCancel } from "../keys.js";
 import { ACCENT, ERROR } from "../theme.js";
 
@@ -16,26 +17,14 @@ export default function MultiselectStep({ step, initialValue, config, onSubmit, 
   const [filterMode, setFilterMode] = useState(false);
   const [filter, setFilter] = useState("");
 
-  const needle = filter.toLowerCase();
-  const options = filter
-    ? allOptions.filter(
-        (o) =>
-          o.label.toLowerCase().includes(needle) ||
-          String(o.value).toLowerCase().includes(needle),
-      )
-    : allOptions;
+  const options = filterByLabelOrValue(allOptions, filter);
 
-  const clampedCursor = Math.min(cursor, Math.max(0, options.length - 1));
+  const clampedCursor = clampCursor(cursor, options.length);
 
   const toggleCurrent = () => {
     const opt = options[clampedCursor];
     if (!opt) return;
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(opt.value)) next.delete(opt.value);
-      else next.add(opt.value);
-      return next;
-    });
+    setSelected((prev) => toggleValue(prev, opt.value));
   };
 
   useInput((input, key) => {

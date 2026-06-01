@@ -3,81 +3,13 @@ import { Box, Text, useStdout } from "ink";
 import Select from "./Select.jsx";
 import Preview from "./Preview.jsx";
 import StatusBar from "./StatusBar.jsx";
-import { loadUsage, topFlowKeys } from "../usageStore.js";
+import { loadUsage } from "../usageStore.js";
 import { isCancel } from "./keys.js";
 import { ACCENT } from "./theme.js";
+import { buildTabs, decorateItems, wrapTabIndex } from "./menuModel.js";
 
 const WIDE_THRESHOLD = 100;
-const MAX_ITEM_HOTKEYS = 9;
 const EMPTY_ITEMS = Object.freeze([]);
-
-function resolveFrequentlyUsed(setting) {
-  if (setting === false) return { enabled: false, count: 0 };
-  const enabled = setting?.enabled !== false;
-  const count = Number.isInteger(setting?.count) && setting.count > 0 ? setting.count : 3;
-  return { enabled, count };
-}
-
-/**
- * Build the tab list. Each tab: { id, label, hotkey, items: [{flowKey, label}], promotedFromGroup? }
- * The Recent tab is included only when frequentlyUsed yields entries.
- * Items in non-Recent tabs are de-duplicated against the Recent set so the user
- * doesn't see the same flow twice.
- */
-function buildTabs(config) {
-  const flowEntries = Object.entries(config.flows);
-  const flowByKey = new Map(flowEntries);
-  const tabs = [];
-
-  // Group flows by their config.group
-  const groups = new Map();
-  for (const [key, flow] of flowEntries) {
-    const g = flow.group ?? "Other";
-    if (!groups.has(g)) groups.set(g, []);
-    groups.get(g).push({ flowKey: key, flow });
-  }
-
-  // Recent tab (does NOT deduplicate against group tabs — items can appear in both)
-  const { enabled: freqEnabled, count: freqCount } = resolveFrequentlyUsed(config.frequentlyUsed);
-  if (freqEnabled) {
-    const availableKeys = new Set(flowEntries.map(([key]) => key));
-    const topKeys = topFlowKeys(loadUsage(), availableKeys, freqCount);
-    if (topKeys.length > 0) {
-      tabs.push({
-        id: "recent",
-        label: "recent",
-        hotkey: "r",
-        items: topKeys.map((k) => ({ flowKey: k, label: flowByKey.get(k).label })),
-      });
-    }
-  }
-
-  // One tab per group, in encounter order
-  for (const [name, entries] of groups) {
-    const items = entries.map(({ flowKey, flow }) => ({ flowKey, label: flow.label }));
-    if (items.length === 0) continue;
-    tabs.push({
-      id: name.toLowerCase(),
-      label: name.toLowerCase(),
-      hotkey: pickHotkey(name.toLowerCase(), tabs),
-      items,
-    });
-  }
-
-  return tabs;
-}
-
-/**
- * Pick a single-char hotkey for a tab; first non-conflicting letter of the label,
- * falling back to subsequent letters if there is a clash.
- */
-function pickHotkey(label, existingTabs) {
-  const used = new Set(existingTabs.map((t) => t.hotkey));
-  for (const ch of label.toLowerCase()) {
-    if (/[a-z]/.test(ch) && !used.has(ch)) return ch;
-  }
-  return null;
-}
 
 function TabBar({ tabs, activeIndex, muted }) {
   return (
@@ -157,7 +89,7 @@ export default function MainMenu({ config, utils, onSelect }) {
   const wide = width >= WIDE_THRESHOLD;
 
   // buildTabs reads usage from disk — memoize against config identity.
-  const tabs = useMemo(() => buildTabs(config), [config]);
+  const tabs = useMemo(() => buildTabs(config, loadUsage()), [config]);
   const [activeTab, setActiveTab] = useState(0);
   const [filterMode, setFilterMode] = useState(false);
   const [filter, setFilter] = useState("");
@@ -167,30 +99,15 @@ export default function MainMenu({ config, utils, onSelect }) {
   const baseItems = tab?.items ?? EMPTY_ITEMS;
   const filtering = filter.length > 0;
 
-  const decoratedItems = useMemo(() => {
-    if (filtering) {
-      const needle = filter.toLowerCase();
-      return Object.entries(config.flows)
-        .filter(([, flow]) => flow.label.toLowerCase().includes(needle))
-        .map(([flowKey, flow], i) => ({
-          value: flowKey,
-          label: flow.label,
-          hint: (flow.group ?? "other").toLowerCase(),
-          hotkey: i < MAX_ITEM_HOTKEYS ? String(i + 1) : null,
-        }));
-    }
-    return baseItems.map((it, i) => ({
-      value: it.flowKey,
-      label: it.label,
-      hotkey: i < MAX_ITEM_HOTKEYS ? String(i + 1) : null,
-    }));
-  }, [filtering, filter, baseItems, config.flows]);
+  const decoratedItems = useMemo(
+    () => decorateItems({ filtering, filter, baseItems, flows: config.flows }),
+    [filtering, filter, baseItems, config.flows],
+  );
 
   const switchTab = (next) => {
-    if (next < 0) next = tabs.length - 1;
-    if (next >= tabs.length) next = 0;
-    setActiveTab(next);
-    setHoveredKey(tabs[next]?.items[0]?.flowKey ?? null);
+    const wrapped = wrapTabIndex(next, tabs.length);
+    setActiveTab(wrapped);
+    setHoveredKey(tabs[wrapped]?.items[0]?.flowKey ?? null);
   };
 
   const handleKey = (input, key) => {

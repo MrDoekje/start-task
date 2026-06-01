@@ -71,3 +71,10 @@ These require `glab auth login` on the host (the skills use `glab` for GitLab AP
 npm test          # vitest
 npm run lint      # oxlint
 ```
+
+`test/contract/` is a framework-agnostic **behavioral contract suite** — an
+executable spec of how the app behaves, independent of the UI toolkit. Treat it
+as do-not-modify: if a refactor breaks a contract test, fix the code, not the
+test. See `test/contract/README.md`. The UI logic it pins lives in plain modules
+(`lib/tui-ink/*Model.js`, `*Buffer.js`, `listNav.js`, `windowStatus.js`) that the
+`.jsx` components only render — keep new UI logic there, not inline in components.

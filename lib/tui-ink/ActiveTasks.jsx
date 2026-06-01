@@ -3,23 +3,16 @@ import { Box, Text, useInput } from "ink";
 import Select from "./Select.jsx";
 import { isCancel } from "./keys.js";
 import { ACCENT, OK } from "./theme.js";
+import { sameWindows, windowState } from "./windowStatus.js";
+
+const GLYPH = {
+  attached: { glyph: "◉", color: ACCENT },
+  running: { glyph: "●", color: OK },
+  idle: { glyph: "○", color: "gray" },
+};
 
 function glyphFor(w) {
-  if (w.active) return { glyph: "◉", color: ACCENT };
-  if (w.status === "running") return { glyph: "●", color: OK };
-  return { glyph: "○", color: "gray" };
-}
-
-function sameWindows(a, b) {
-  if (a === b) return true;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    const x = a[i], y = b[i];
-    if (x.name !== y.name || x.status !== y.status || x.active !== y.active || x.paneCount !== y.paneCount) {
-      return false;
-    }
-  }
-  return true;
+  return GLYPH[windowState(w)];
 }
 
 function renderRow(item, active) {

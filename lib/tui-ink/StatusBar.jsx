@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Text } from "ink";
 import { ACCENT, OK } from "./theme.js";
+import { sameWindows, windowState } from "./windowStatus.js";
 
 const STATUS_GLYPH = {
   running: { glyph: "●", color: OK },
@@ -9,20 +10,7 @@ const STATUS_GLYPH = {
 };
 
 function statusFor(w) {
-  if (w.active) return STATUS_GLYPH.attached;
-  return STATUS_GLYPH[w.status] ?? STATUS_GLYPH.idle;
-}
-
-function sameWindows(a, b) {
-  if (a === b) return true;
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    const x = a[i], y = b[i];
-    if (x.name !== y.name || x.status !== y.status || x.active !== y.active || x.paneCount !== y.paneCount) {
-      return false;
-    }
-  }
-  return true;
+  return STATUS_GLYPH[windowState(w)];
 }
 
 export default function StatusBar({ utils, refreshInterval = 5000 }) {

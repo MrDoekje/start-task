@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box, Text, useInput } from "ink";
 import { runStepPipeline } from "../stepHelpers.js";
-import { nextWordBoundary, prevWordBoundary } from "../textBuffer.js";
+import * as buf from "../multilineBuffer.js";
 import { isCancel } from "../keys.js";
 import { ERROR } from "../theme.js";
 
@@ -25,133 +25,30 @@ import { ERROR } from "../theme.js";
  *   inserted at the cursor in one batched state update.
  */
 export default function MultilineStep({ step, initialValue, config, utils, onSubmit, onBack }) {
-  const initialLines = (initialValue ?? "").split("\n");
-  const [state, setState] = useState(() => ({
-    lines: initialLines.length > 0 ? initialLines : [""],
-    row: Math.max(0, initialLines.length - 1),
-    col: (initialLines[initialLines.length - 1] ?? "").length,
-  }));
+  const [state, setState] = useState(() => buf.initBuffer(initialValue));
   const [error, setError] = useState(null);
 
   const submit = () => {
-    const raw = state.lines.join("\n").replace(/\s+$/, "");
+    const raw = buf.toText(state).replace(/\s+$/, "");
     const r = runStepPipeline(raw, step, utils, config);
     if (r.error) return setError(r.error);
     onSubmit(r.value);
   };
 
-  const insertText = (text) => {
-    setState((s) => {
-      let { lines, row, col } = s;
-      lines = lines.slice();
-      const parts = text.split(/\r\n|\r|\n/);
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i];
-        if (part.length > 0) {
-          lines[row] = lines[row].slice(0, col) + part + lines[row].slice(col);
-          col += part.length;
-        }
-        if (i < parts.length - 1) {
-          const cur = lines[row];
-          lines[row] = cur.slice(0, col);
-          lines.splice(row + 1, 0, cur.slice(col));
-          row += 1;
-          col = 0;
-        }
-      }
-      return { lines, row, col };
-    });
-    setError(null);
-  };
-
-  const backspace = () => {
-    setState((s) => {
-      let { lines, row, col } = s;
-      if (col > 0) {
-        lines = lines.slice();
-        lines[row] = lines[row].slice(0, col - 1) + lines[row].slice(col);
-        col -= 1;
-      } else if (row > 0) {
-        lines = lines.slice();
-        const joinCol = lines[row - 1].length;
-        lines[row - 1] = lines[row - 1] + lines[row];
-        lines.splice(row, 1);
-        row -= 1;
-        col = joinCol;
-      }
-      return { lines, row, col };
-    });
-    setError(null);
-  };
-
-  const killToEol = () => {
-    setState((s) => {
-      const lines = s.lines.slice();
-      lines[s.row] = lines[s.row].slice(0, s.col);
-      return { ...s, lines };
-    });
-  };
-
-  const moveUp = () => setState((s) => {
-    if (s.row === 0) return s;
-    return { ...s, row: s.row - 1, col: Math.min(s.col, s.lines[s.row - 1].length) };
-  });
-
-  const moveDown = () => setState((s) => {
-    if (s.row >= s.lines.length - 1) return s;
-    return { ...s, row: s.row + 1, col: Math.min(s.col, s.lines[s.row + 1].length) };
-  });
-
-  const moveLeft = () => setState((s) => {
-    if (s.col > 0) return { ...s, col: s.col - 1 };
-    if (s.row > 0) return { ...s, row: s.row - 1, col: s.lines[s.row - 1].length };
-    return s;
-  });
-
-  const moveRight = () => setState((s) => {
-    if (s.col < s.lines[s.row].length) return { ...s, col: s.col + 1 };
-    if (s.row < s.lines.length - 1) return { ...s, row: s.row + 1, col: 0 };
-    return s;
-  });
-
-  const moveLineStart = () => setState((s) => ({ ...s, col: 0 }));
-  const moveLineEnd = () => setState((s) => ({ ...s, col: s.lines[s.row].length }));
-
-  const moveWordLeft = () => setState((s) => ({ ...s, col: prevWordBoundary(s.lines[s.row], s.col) }));
-  const moveWordRight = () => setState((s) => ({ ...s, col: nextWordBoundary(s.lines[s.row], s.col) }));
-
-  const deleteWordBack = () => {
-    setState((s) => {
-      const line = s.lines[s.row];
-      const start = prevWordBoundary(line, s.col);
-      if (start === s.col) return s;
-      const lines = s.lines.slice();
-      lines[s.row] = line.slice(0, start) + line.slice(s.col);
-      return { lines, row: s.row, col: start };
-    });
-    setError(null);
-  };
-
-  const deleteWordForward = () => {
-    setState((s) => {
-      const line = s.lines[s.row];
-      const end = nextWordBoundary(line, s.col);
-      if (end === s.col) return s;
-      const lines = s.lines.slice();
-      lines[s.row] = line.slice(0, s.col) + line.slice(end);
-      return { lines, row: s.row, col: s.col };
-    });
-    setError(null);
-  };
-
-  const killToBol = () => {
-    setState((s) => {
-      const lines = s.lines.slice();
-      lines[s.row] = lines[s.row].slice(s.col);
-      return { lines, row: s.row, col: 0 };
-    });
-    setError(null);
-  };
+  const insertText = (text) => { setState((s) => buf.insertText(s, text)); setError(null); };
+  const backspace = () => { setState(buf.backspace); setError(null); };
+  const killToEol = () => setState(buf.killToEol);
+  const moveUp = () => setState(buf.moveUp);
+  const moveDown = () => setState(buf.moveDown);
+  const moveLeft = () => setState(buf.moveLeft);
+  const moveRight = () => setState(buf.moveRight);
+  const moveLineStart = () => setState(buf.moveLineStart);
+  const moveLineEnd = () => setState(buf.moveLineEnd);
+  const moveWordLeft = () => setState(buf.moveWordLeft);
+  const moveWordRight = () => setState(buf.moveWordRight);
+  const deleteWordBack = () => { setState(buf.deleteWordBack); setError(null); };
+  const deleteWordForward = () => { setState(buf.deleteWordForward); setError(null); };
+  const killToBol = () => { setState(buf.killToBol); setError(null); };
 
   useInput((input, key) => {
     if (isCancel(input, key)) return onBack();
@@ -183,7 +80,7 @@ export default function MultilineStep({ step, initialValue, config, utils, onSub
     if (input && !key.ctrl && !key.meta) return insertText(input);
   });
 
-  const charCount = state.lines.reduce((n, l) => n + l.length, 0) + state.lines.length - 1;
+  const charCount = buf.charCount(state);
 
   return (
     <Box flexDirection="column">
