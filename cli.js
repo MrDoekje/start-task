@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
 import { resolve } from "path";
+import { register as registerTsx } from "tsx/esm/api";
+
+// Register tsx loader so .jsx files (used by the Ink TUI) load without a build step.
+registerTsx();
 
 const __dirname = resolve(new URL(".", import.meta.url).pathname);
 const isTui = process.argv.includes("--tui");
 
 if (isTui) {
   // ── TUI mode: interactive menu (runs inside tmux window) ──
-  const { default: runTui } = await import("./lib/tui.js");
+  const { default: runTui } = await import("./lib/tui-ink/index.jsx");
   await runTui();
 } else {
   // ── Launch mode: setup + tmux session + open terminal ──
@@ -19,7 +23,7 @@ if (isTui) {
   try {
     config = await loadConfig();
   } catch {
-    const { runSetupWizard } = await import("./lib/setupWizard.js");
+    const { runSetupWizard } = await import("./lib/setupWizard.jsx");
     await runSetupWizard();
     config = await loadConfig();
     firstRun = true;

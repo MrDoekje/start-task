@@ -46,13 +46,20 @@ Everything else (`git`, `taskProvider`, `projects`, `workspaceRoot`, `worktree`,
 
 ## Skills
 
-Detailed guides live in the `docs/` directory. Claude Code can also invoke these as skills:
+Local skills (in `docs/`) cover how to extend start-task itself:
 
 - `/configure-start-task` — overall config structure, adding flows (`docs/configure-start-task.md`)
 - `/create-provider` — create or swap providers (`docs/create-provider.md`)
 - `/create-wizard-step` — custom wizard steps (`docs/create-wizard-step.md`)
 - `/create-flow-action` — write action functions, build prompts (`docs/create-flow-action.md`)
 - `/worktree-setup` — worktrees and project setup (`docs/worktree-setup.md`)
+
+MR and investigation flows delegate to skills installed from a shared AI skill marketplace:
+
+- `/describe-mr`, `/review-mr`, `/resolve-threads` — invoked by the MR flows in `user/mr.js`
+- `/investigate` — invoked by the Investigate flow in `user/investigate.js`
+
+These require `glab auth login` on the host (the skills use `glab` for GitLab API access).
 
 ## Environment
 

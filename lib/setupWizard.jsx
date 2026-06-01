@@ -1,7 +1,9 @@
-import * as p from "@clack/prompts";
+import React from "react";
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
+import { renderScreen } from "./tui-ink/renderScreen.js";
+import SetupWizard from "./tui-ink/SetupWizard.jsx";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = resolve(__dirname, "..");
@@ -74,87 +76,40 @@ const DEFAULT_TMUX_BIN =
  * @returns {Promise<void>}
  */
 export async function runSetupWizard() {
-  p.intro("start-task setup");
+  const answers = await renderScreen((onResult) =>
+    React.createElement(SetupWizard, {
+      agents: AGENTS,
+      terminals: TERMINALS,
+      defaultTmuxBin: DEFAULT_TMUX_BIN,
+      configExists: existsSync(CONFIG_PATH),
+      onComplete: onResult,
+      onCancel: () => onResult(null),
+    }),
+  );
 
-  // 1. Select agent
-  const agentChoice = await p.select({
-    message: "Which coding agent do you use?",
-    options: AGENTS.map((a) => ({ value: a.value, label: a.label })),
-  });
-  if (p.isCancel(agentChoice)) {
-    p.cancel("Setup cancelled.");
+  if (!answers) {
+    console.log("Setup cancelled.");
     process.exit(0);
   }
 
-  const agent = AGENTS.find((a) => a.value === agentChoice);
+  const agent = AGENTS.find((a) => a.value === answers.agent);
+  const terminal = TERMINALS.find((t) => t.value === answers.terminal);
 
-  // 2. Agent binary path
-  const agentBin = await p.text({
-    message: "Path to agent binary:",
-    placeholder: agent.defaultBin,
-    initialValue: agent.defaultBin,
+  const configContent = generateConfig({
+    agent,
+    agentBin: answers.agentBin,
+    terminal,
+    tmuxBin: answers.tmuxBin,
+    sessionName: answers.sessionName,
   });
-  if (p.isCancel(agentBin)) {
-    p.cancel("Setup cancelled.");
-    process.exit(0);
-  }
-
-  // 3. Select terminal
-  const terminalChoice = await p.select({
-    message: "Which terminal emulator do you use?",
-    options: TERMINALS.map((t) => ({ value: t.value, label: t.label })),
-  });
-  if (p.isCancel(terminalChoice)) {
-    p.cancel("Setup cancelled.");
-    process.exit(0);
-  }
-
-  const terminal = TERMINALS.find((t) => t.value === terminalChoice);
-
-  // 4. Tmux binary path
-  const tmuxBin = await p.text({
-    message: "Path to tmux binary:",
-    placeholder: DEFAULT_TMUX_BIN,
-    initialValue: DEFAULT_TMUX_BIN,
-  });
-  if (p.isCancel(tmuxBin)) {
-    p.cancel("Setup cancelled.");
-    process.exit(0);
-  }
-
-  // 5. Session name
-  const sessionName = await p.text({
-    message: "Tmux session name:",
-    placeholder: "tasks",
-    initialValue: "tasks",
-  });
-  if (p.isCancel(sessionName)) {
-    p.cancel("Setup cancelled.");
-    process.exit(0);
-  }
-
-  // 6. Confirm overwrite if config already exists
-  if (existsSync(CONFIG_PATH)) {
-    const overwrite = await p.confirm({
-      message: "Config file already exists. Overwrite it?",
-      initialValue: false,
-    });
-    if (p.isCancel(overwrite) || !overwrite) {
-      p.cancel("Setup cancelled.");
-      process.exit(0);
-    }
-  }
-
-  // 7. Write config
-  const configContent = generateConfig({ agent, agentBin, terminal, tmuxBin, sessionName });
   const userDir = resolve(PROJECT_ROOT, "user");
   if (!existsSync(userDir)) {
     mkdirSync(userDir, { recursive: true });
   }
   writeFileSync(CONFIG_PATH, configContent);
 
-  p.log.success(`Config written to ${CONFIG_PATH}`);
-  p.outro("Launching start-task...");
+  console.log(`\n✓ Config written to ${CONFIG_PATH}`);
+  console.log("Launching start-task...\n");
 }
 
 function generateConfig({ agent, agentBin, terminal, tmuxBin, sessionName }) {

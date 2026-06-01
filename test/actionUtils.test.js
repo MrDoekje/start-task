@@ -98,7 +98,7 @@ describe("launchTask with flow-level override via resolveOptions", () => {
       agent: { name: "global-agent", buildCommand: globalBuild },
     });
 
-    // Simulate what tui.js runFlow does: resolve options then rebuild config
+    // Simulate what runFlow does: resolve options then rebuild config
     const configOptions = extractOptions(config);
     const flowOptions = { agent: { name: "flow-agent", buildCommand: flowBuild } };
     const { resolvedOptions } = resolveOptions(configOptions, flowOptions);

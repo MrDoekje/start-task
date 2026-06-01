@@ -40,6 +40,27 @@ const myStep = {
 
 Both `transform` and `postValidate` receive `(value, utils, config)` where `utils` is the ActionUtils object and `config` is the full config.
 
+### Clean suggestions
+
+Add a `clean(value)` function to a text step to offer a sanitized version of the
+input. The suggestion is rendered below the field (hidden when empty or equal to
+the current trimmed value) and pressing **Tab** replaces the input with it. Pair
+it with `validate` to reject bad input outright while still offering a one-key fix:
+
+```js
+import { validateBranchName, cleanBranchName } from "../lib/utils/branchName.js";
+
+{
+  type: "text",
+  key: "branchName",
+  message: "Branch name:",
+  placeholder: "feature/my-thing",
+  validate: validateBranchName, // blocks submit on invalid git branch names
+  clean: cleanBranchName,        // Tab applies the cleaned suggestion
+  transform: (value) => value.trim(),
+}
+```
+
 ## Editor step
 
 Opens `$VISUAL` / `$EDITOR` (falls back to `vi`) with a temp file for multi-line input. Comment lines (`#`) are stripped from the result. Use this instead of `text` when users need to paste or write multi-line content.
